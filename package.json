@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@mediapipe/selfie_segmentation": "^0.1.1675465747",
-    "@tensorflow-models/body-segmentation": "^1.0.2",
     "@tensorflow-models/coco-ssd": "^2.2.3",
     "@tensorflow/tfjs": "^4.11.0"
   }

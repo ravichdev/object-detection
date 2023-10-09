@@ -1,12 +1,3 @@
-import * as tf from "@tensorflow/tfjs";
-import {
-  SupportedModels,
-  createSegmenter,
-  toColoredMask,
-  bodyPixMaskValueToRainbowColor,
-  drawMask,
-  drawPixelatedMask,
-} from "@tensorflow-models/body-segmentation";
 import * as mpSelfieSegmentation from "@mediapipe/selfie_segmentation";
 import { setupCameraApp } from "./camera";
 
@@ -14,7 +5,6 @@ const video = document.querySelector("#video");
 const canvas = document.querySelector("#output");
 const canvasCtx = canvas.getContext("2d");
 let rafId;
-const activeEffect = "";
 
 const CANVAS_NAMES = {
   blurred: "blurred",
