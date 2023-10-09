@@ -1,0 +1,36 @@
+<!doctype html>
+<html dir="ltr" lang=en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,
+                                 maximum-scale=1.0, user-scalable=no">
+  <title>Object and Person Detection</title>
+
+  <style>
+    #output {
+      position: absolute;
+    }
+    #camera-select-wrap {
+      margin: 2rem auto;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="canvas-wrapper">
+    <canvas id="output"></canvas>
+    <video id="video" style="
+      width: auto;
+      height: auto;
+      display: none;
+      ">
+    </video>
+  </div>
+
+  <div id="camera-select-wrap">
+    <label>Camera: </label>
+    <select id="camera-select"></select>
+  </div>
+
+  <script src="person-detection.js"></script>
+</body>
