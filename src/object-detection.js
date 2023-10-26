@@ -2,6 +2,16 @@ import * as tf from '@tensorflow/tfjs';
 import * as cocossd from "@tensorflow-models/coco-ssd";
 import { setupCameraApp } from './camera';
 
+tf.setBackend('webgl');
+
+function debounce(func, timeout = 300){
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+  };
+}
+
 async function app() {
 	setupCameraApp();
 
@@ -11,9 +21,13 @@ async function app() {
 // Main function
 const runCoco = async () => {
     const model = await cocossd.load();
-    setInterval(() => {
+
+    const predict = debounce(() => {
       detect(model);
-    }, 100);
+      requestAnimationFrame(predict);
+    }, 500);
+
+    predict();
 };
 
 const canvas = document.querySelector('#output');
@@ -54,15 +68,21 @@ const drawRect = (detections, ctx) =>{
 	  const text = prediction['class'];
 
 	  // Set styling
-	  const color = '#C70039';
+	  const color = '#b10000';
 	  ctx.strokeStyle = color
-	  ctx.font = '20px Arial';
+	  ctx.font = '28px Arial';
 	  ctx.lineWidth = 2;
 
 	  // Draw rectangles and text
 	  ctx.beginPath();
+
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = '#fff';
+    const textWidth = ctx.measureText(text).width + 10;
+    ctx.fillRect(x, y, textWidth, 32);
+
 	  ctx.fillStyle = color
-	  ctx.fillText(text, x, y);
+	  ctx.fillText(text, x + 5, y + 2);
 	  ctx.rect(x, y, width, height);
 	  ctx.stroke();
 	});

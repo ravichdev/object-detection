@@ -1,16 +1,14 @@
 import * as mpSelfieSegmentation from "@mediapipe/selfie_segmentation";
-import { setupCameraApp } from "./camera";
+import {setupCameraApp} from "./camera";
 
 const video = document.querySelector("#video");
 const canvas = document.querySelector("#output");
 const canvasCtx = canvas.getContext("2d");
-let rafId;
-
 const CANVAS_NAMES = {
   blurred: "blurred",
   blurredMask: "blurred-mask",
   mask: "mask",
-  lowresPartMask: "lowres-part-mask",
+  lowresPartMask: "lowres-part-mask"
 };
 const offScreenCanvases = {};
 
@@ -32,7 +30,7 @@ function ensureOffscreenCanvasCreated(id) {
 }
 
 function drawAndBlurImageOnCanvas(image, blurAmount, canvas) {
-  const { height, width } = image;
+  const {height, width} = image;
   const ctx = canvas.getContext("2d");
   canvas.width = width;
   canvas.height = height;
@@ -43,11 +41,7 @@ function drawAndBlurImageOnCanvas(image, blurAmount, canvas) {
   ctx.restore();
 }
 
-function drawAndBlurImageOnOffScreenCanvas(
-  image,
-  blurAmount,
-  offscreenCanvasName
-) {
+function drawAndBlurImageOnOffScreenCanvas(image, blurAmount, offscreenCanvasName) {
   const canvas = ensureOffscreenCanvasCreated(offscreenCanvasName);
   if (blurAmount === 0) {
     renderImageToCanvas(image, canvas);
@@ -58,7 +52,7 @@ function drawAndBlurImageOnOffScreenCanvas(
 }
 
 function renderImageToCanvas(image, canvas) {
-  const { width, height } = image;
+  const {width, height} = image;
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext("2d");
@@ -83,7 +77,32 @@ async function app() {
   runBodySegmentation();
 }
 
-function onResults(results) {
+function drawMask(results) {
+    // Get Video Properties
+  const videoWidth = video.videoWidth;
+  const videoHeight = video.videoHeight;
+  canvas.width = videoWidth;
+  canvas.height = videoHeight;
+
+  canvasCtx.save();
+  canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+  canvasCtx.drawImage(results.segmentationMask, 0, 0,
+    canvas.width, canvas.height);
+
+  // Only overwrite existing pixels.
+  canvasCtx.globalCompositeOperation = 'source-in';
+  canvasCtx.fillStyle = '#00FF00';
+  canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Only overwrite missing pixels.
+  canvasCtx.globalCompositeOperation = 'destination-atop';
+  canvasCtx.drawImage(
+      results.image, 0, 0, canvas.width, canvas.height);
+
+  canvasCtx.restore();
+}
+
+function blurBackground(results) {
   // Get Video Properties
   const videoWidth = video.videoWidth;
   const videoHeight = video.videoHeight;
@@ -105,38 +124,30 @@ function onResults(results) {
 
   drawWithCompositing(canvasCtx, results.segmentationMask, "destination-in");
 
-  const blurredImage = drawAndBlurImageOnOffScreenCanvas(
-    results.image,
-    15,
-    CANVAS_NAMES.blurred
-  );
+  const blurredImage = drawAndBlurImageOnOffScreenCanvas(results.image, 15, CANVAS_NAMES.blurred);
 
   drawWithCompositing(canvasCtx, blurredImage, "destination-over");
 
   canvasCtx.restore();
 }
 
-const runBodySegmentation = async () => {
+const runBodySegmentation = async() => {
   const selfieSegmentation = new mpSelfieSegmentation.SelfieSegmentation({
     locateFile: (file) => {
       return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`;
-    },
+    }
   });
-  selfieSegmentation.setOptions({
-    modelSelection: 1,
-  });
-  selfieSegmentation.onResults(onResults);
+  selfieSegmentation.setOptions({modelSelection: 1});
+  selfieSegmentation.onResults(blurBackground);
 
-  const renderPrediction = async () => {
-    await selfieSegmentation.send({ image: video });
-
-    rafId = requestAnimationFrame(renderPrediction);
+  const renderPrediction = async() => {
+    await selfieSegmentation.send({image: video});
+    requestAnimationFrame(renderPrediction);
   };
 
   video.addEventListener('loadeddata', async() => {
     await renderPrediction();
   }, false);
-
 };
 
 app();

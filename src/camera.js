@@ -6,10 +6,7 @@ export async function getVideoInputs() {
 	}
 
 	const devices = await navigator.mediaDevices.enumerateDevices();
-
-	const videoDevices = devices.filter(device => device.kind === 'videoinput');
-
-	return videoDevices;
+	return devices.filter(device => device.kind === 'videoinput');
 }
 
 export async function setupCamera(deviceId) {
@@ -24,6 +21,7 @@ export async function setupCamera(deviceId) {
 			deviceId,
 		  	width: 1280,
 		  	height: 720,
+			frameRate: { ideal: 10, max: 15 },
 		}
 	};
 
